@@ -8,11 +8,15 @@ import (
 )
 
 const (
-	CreateSchoolMethod      = "/school/create"
-	CreateClassMethod       = "/class/create"
-	CreatePersonMethod      = "/person/create"
-	AddStudentToClassMethod = "/class/add/student"
-	WhoAmIMethod            = "/who/am/i"
+	CreateSchoolMethod         = "/school/create"
+	CreateClassMethod          = "/class/create"
+	CreatePersonMethod         = "/person/create"
+	AddStudentToClassMethod    = "/class/add/student"
+	WhoAmIMethod               = "/who/am/i"
+	SchoolListMethod           = "/school/list"
+	SchoolClassesMethod        = "/school/classes"
+	ClassStudentsMethod        = "/class/students"
+	AssignTeacherToClassMethod = "/class/assign/teacher"
 )
 
 type Router struct {
@@ -100,6 +104,52 @@ func (r *Router) handleWhoAmIMethod(req *protocol.Request) protocol.Response {
 	})
 
 }
+
+func (r *Router) handleSchoolListMethod() protocol.Response {
+	schools, err := r.school.List()
+	if err != nil {
+		return fromServiceError(err)
+	}
+	return ok(schools)
+}
+
+func (r *Router) handleSchoolClassesMethod(req *protocol.Request) protocol.Response {
+	var scDTO dto.SchoolClassesDTO
+	if err := json.Unmarshal(req.Data, &scDTO); err != nil {
+		return badRequest("invalid input for school.classes")
+	}
+	classes, err := r.school.ListClasses(scDTO.SchoolID)
+	if err != nil {
+		return fromServiceError(err)
+	}
+	return ok(classes)
+}
+
+func (r *Router) handleClassStudentsMethod(req *protocol.Request) protocol.Response {
+	var csDTO dto.ClassStudentsDTO
+	if err := json.Unmarshal(req.Data, &csDTO); err != nil {
+		return badRequest("invalid input for class.students")
+	}
+	students, err := r.class.ListStudents(csDTO.ClassID)
+	if err != nil {
+		return fromServiceError(err)
+	}
+	return ok(students)
+}
+
+func (r *Router) handleAssignTeacherToClassMethod(req *protocol.Request) protocol.Response {
+	var at dto.AssignTeacherDTO
+	if err := json.Unmarshal(req.Data, &at); err != nil {
+		return badRequest("invalid input for class.assign.teacher")
+	}
+
+	if err := r.class.UpdateTeacher(at.ClassID, at.TeacherID); err != nil {
+		return fromServiceError(err)
+	}
+
+	return ok(map[string]any{"status": "teacher assigned"})
+}
+
 func (r *Router) Handle(req *protocol.Request) protocol.Response {
 	switch req.Method {
 	case CreateSchoolMethod:
@@ -112,6 +162,14 @@ func (r *Router) Handle(req *protocol.Request) protocol.Response {
 		return r.handleAddStudentToClassMethod(req)
 	case WhoAmIMethod:
 		return r.handleWhoAmIMethod(req)
+	case SchoolListMethod:
+		return r.handleSchoolListMethod()
+	case SchoolClassesMethod:
+		return r.handleSchoolClassesMethod(req)
+	case ClassStudentsMethod:
+		return r.handleClassStudentsMethod(req)
+	case AssignTeacherToClassMethod:
+		return r.handleAssignTeacherToClassMethod(req)
 	default:
 		return protocol.Response{
 			Status:  false,

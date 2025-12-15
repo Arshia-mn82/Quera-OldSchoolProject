@@ -30,6 +30,16 @@ func (er *EnrollmentRepository) Exists(classID uint, studentID uint) (bool, erro
 	return true, nil
 }
 
+func (er *EnrollmentRepository) ListStudentsByClassID(classID uint) ([]models.Person, error) {
+	var students []models.Person
+
+	err := er.db.Table("people").Joins("JOIN enrollments ON enrollments.student_id = people.id").Where("enrollments.class_id = ?", classID).Order("people.id ASC").Scan(&students).Error
+	if err != nil {
+		return nil, err
+	}
+	return students, nil
+}
+
 func (er *EnrollmentRepository) Add(classID, studentID uint) (*models.Enrollment, error) {
 	e := &models.Enrollment{
 		ClassID:   classID,

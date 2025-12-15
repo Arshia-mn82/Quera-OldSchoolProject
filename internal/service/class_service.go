@@ -3,17 +3,22 @@ package service
 import (
 	"OldSchool/internal/repository"
 	"OldSchool/internal/repository/models"
+	"errors"
 	"strings"
+
+	"gorm.io/gorm"
 )
 
 type ClassRepo interface {
 	Create(name string, schoolID uint, teacherID uint) (*models.Class, error)
 	GetByID(id uint) (*models.Class, error)
 	ListIDsByTeacherID(teacherID uint) ([]uint, error)
+	UpdateTeacher(classID, teacherID uint) error
 }
 type EnrollmentRepo interface {
 	Exists(classID uint, studentID uint) (bool, error)
 	Add(classID, studentID uint) (*models.Enrollment, error)
+	ListStudentsByClassID(classID uint) ([]models.Person, error)
 }
 
 type UnitOfWork interface {
@@ -56,6 +61,60 @@ func (cs *ClassService) Create(name string, schoolID uint, teacherID uint) (*mod
 	}
 
 	return cs.classRepo.Create(name, schoolID, teacherID)
+
+}
+
+func (cs *ClassService) UpdateTeacher(classID uint, teacherID uint) error {
+	if classID == 0 || teacherID == 0 {
+		return ErrInvalidInput
+	}
+
+	cl, err := cs.classRepo.GetByID(classID)
+	if err != nil {
+		return err
+	}
+	if cl == nil {
+		return ErrNotFound
+	}
+
+	p, err := cs.personRepo.GetByID(teacherID)
+	if err != nil {
+		return err
+	}
+	if p == nil {
+		return ErrNotFound
+	}
+	if p.Role != "teacher" {
+		return ErrRoleMismatch
+	}
+
+	if cl.TeacherID == teacherID {
+		return nil
+	}
+
+	if err := cs.classRepo.UpdateTeacher(classID, teacherID); err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return ErrNotFound
+		}
+		return err
+	}
+	return nil
+}
+
+func (cs *ClassService) ListStudents(classID uint) ([]models.Person, error) {
+	if classID == 0 {
+		return nil, ErrInvalidInput
+	}
+
+	class, err := cs.classRepo.GetByID(classID)
+	if err != nil {
+		return nil, err
+	}
+	if class == nil {
+		return nil, ErrNotFound
+	}
+
+	return cs.enrollmentRepo.ListStudentsByClassID(classID)
 
 }
 

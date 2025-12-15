@@ -25,7 +25,7 @@ func main() {
 	unitOfWorkRepo := repository.NewUnitOfWork(db)
 
 	// Services
-	schoolService := service.NewSchoolService(schoolRepo)
+	schoolService := service.NewSchoolService(schoolRepo, classRepo)
 	personService := service.NewPersonService(personRepo, classRepo, enrollmentRepo)
 	classService := service.NewClassService(classRepo, personRepo, unitOfWorkRepo, enrollmentRepo)
 

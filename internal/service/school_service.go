@@ -10,15 +10,23 @@ import (
 
 type SchoolRepo interface {
 	Create(name string) (*models.School, error)
+	List() ([]models.School, error)
+	GetByID(id uint) (*models.School, error)
+}
+
+type ClassRepoForSchool interface {
+	ListBySchoolID(schoolID uint) ([]models.Class, error)
 }
 
 type SchoolService struct {
 	schoolRepo SchoolRepo
+	classRepo  ClassRepoForSchool
 }
 
-func NewSchoolService(schoolRepo SchoolRepo) *SchoolService {
+func NewSchoolService(schoolRepo SchoolRepo, classRepo ClassRepoForSchool) *SchoolService {
 	return &SchoolService{
 		schoolRepo: schoolRepo,
+		classRepo:  classRepo,
 	}
 }
 
@@ -45,4 +53,22 @@ func (ss *SchoolService) Create(name string) (*models.School, error) {
 	}
 
 	return created, nil
+}
+
+func (ss *SchoolService) List() ([]models.School, error) {
+	return ss.schoolRepo.List()
+}
+
+func (ss *SchoolService) ListClasses(schoolID uint) ([]models.Class, error) {
+	if schoolID == 0 {
+		return nil, ErrInvalidInput
+	}
+	s, err := ss.schoolRepo.GetByID(schoolID)
+	if err != nil {
+		return nil, err
+	}
+	if s == nil {
+		return nil, ErrNotFound
+	}
+	return ss.classRepo.ListBySchoolID(schoolID)
 }

@@ -39,7 +39,7 @@ func setup(t *testing.T) testEnv {
 	uow := repository.NewUnitOfWork(db)
 
 	// services
-	schoolSvc := NewSchoolService(schoolRepo)
+	schoolSvc := NewSchoolService(schoolRepo, classRepo)
 	personSvc := NewPersonService(personRepo, classRepo, enrollRepo)
 	classSvc := NewClassService(classRepo, personRepo, uow, enrollRepo)
 
@@ -164,7 +164,6 @@ func contains(ids []uint, target uint) bool {
 	return false
 }
 
-
 func TestWhoAmI_TeacherAndStudent(t *testing.T) {
 	env := setup(t)
 
@@ -201,8 +200,3 @@ func TestWhoAmI_TeacherAndStudent(t *testing.T) {
 		t.Fatalf("expected [%d], got %v", c1.ID, studentClassIDs)
 	}
 }
-
-
-
-
-

@@ -42,6 +42,22 @@ func (cr *ClassRepository) GetByID(id uint) (*models.Class, error) {
 	return &class, nil
 }
 
+func (cr *ClassRepository) UpdateTeacher(classID, teacherID uint) error {
+	tx := cr.db.Model(&models.Class{}).Where("id = ?", classID).Update("teacher_id", teacherID)
+
+	if tx.Error != nil {
+		return tx.Error
+	}
+	return nil
+}
+
+func (cr *ClassRepository) ListBySchoolID(schooID uint) ([]models.Class, error) {
+	var classes []models.Class
+	if err := cr.db.Where("school_id = ?", schooID).Preload("Teacher").Order("id ASC").Find(&classes).Error; err != nil {
+		return nil, err
+	}
+	return classes, nil
+}
 func (cr *ClassRepository) ListIDsByTeacherID(teacherID uint) ([]uint, error) {
 	var ids []uint
 
@@ -50,6 +66,5 @@ func (cr *ClassRepository) ListIDsByTeacherID(teacherID uint) ([]uint, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	return ids, nil
 }

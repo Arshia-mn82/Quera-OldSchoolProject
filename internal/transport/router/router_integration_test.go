@@ -33,7 +33,7 @@ func setupRouter(t *testing.T) *router.Router {
 	enrollRepo := repository.NewEnrollmentRepository(db)
 	uow := repository.NewUnitOfWork(db)
 
-	schoolSvc := service.NewSchoolService(schoolRepo)
+	schoolSvc := service.NewSchoolService(schoolRepo , classRepo)
 	personSvc := service.NewPersonService(personRepo, classRepo, enrollRepo)
 	classSvc := service.NewClassService(classRepo, personRepo, uow, enrollRepo)
 

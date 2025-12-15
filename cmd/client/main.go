@@ -129,7 +129,7 @@ func main() {
 		s1ID, s2ID             uint
 		t1ID, t2ID             uint
 		student1ID, student2ID uint
-		c1ID, c2ID, c3ID        uint
+		c1ID, c2ID, c3ID       uint
 	)
 
 	// =========================
@@ -259,6 +259,30 @@ func main() {
 	resp, err = send("/unknown/method", map[string]any{"x": 1})
 	mustNoErr("Unknown method", err)
 	mustFail("Unknown method", resp, "unknown")
+
+	resp, err = send("/school/list", nil)
+	mustNoErr("School list", err)
+	mustOK("School list", resp)
+
+	resp, err = send("/school/classes", map[string]any{"school_id": s1ID})
+	mustNoErr("School classes", err)
+	mustOK("School classes", resp)
+
+	resp, err = send("/class/students", map[string]any{"class_id": c1ID})
+	mustNoErr("Class students", err)
+	mustOK("Class students", resp)
+
+	resp, err = send("/school/classes", map[string]any{"school_id": s1ID})
+	mustNoErr("School classes after assign", err)
+	mustOK("School classes after assign", resp)
+
+	resp, err = send("/class/assign/teacher", map[string]any{"class_id": c1ID, "teacher_id": t2ID})
+	mustNoErr("Assign teacher", err)
+	mustOK("Assign teacher", resp)
+
+	resp, err = send("/school/classes", map[string]any{"school_id": s1ID})
+	mustNoErr("School classes after assign", err)
+	mustOK("School classes after assign", resp)
 
 	// =========================
 	// SCENARIO END
