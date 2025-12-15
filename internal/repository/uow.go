@@ -5,7 +5,7 @@ import "gorm.io/gorm"
 type Repos struct {
 	Person     *PersonRepositrory
 	Class      *ClassRepository
-	Enrollemnt *EnrollmentRepository
+	Enrollment *EnrollmentRepository
 	School     *SchoolRepository
 }
 
@@ -23,7 +23,7 @@ func (uow *UnitOfWork) WithinTx(fn func(r Repos) error) error {
 			Person:     NewPersonRepositrory(tx),
 			Class:      NewClassRepository(tx),
 			School:     NewSchoolRepository(tx),
-			Enrollemnt: NewEnrollmentRepository(tx),
+			Enrollment: NewEnrollmentRepository(tx),
 		}
 		return fn(r)
 	})

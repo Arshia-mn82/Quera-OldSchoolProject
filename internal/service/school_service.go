@@ -41,6 +41,7 @@ func (ss *SchoolService) Create(name string) (*models.School, error) {
 		if isUniqueConstraintErr(err) {
 			return nil, ErrSchoolAlreadyExists
 		}
+		return nil, err
 	}
 
 	return created, nil

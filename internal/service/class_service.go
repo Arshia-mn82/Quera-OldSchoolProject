@@ -51,7 +51,7 @@ func (cs *ClassService) Create(name string, schoolID uint, teacherID uint) (*mod
 		return nil, ErrNotFound
 	}
 
-	if teacher.Role == "student" {
+	if teacher.Role != "teacher" {
 		return nil, ErrRoleMismatch
 	}
 
@@ -95,7 +95,7 @@ func (cs *ClassService) AddStudentToClass(studentID uint, classID uint) error {
 	return cs.uow.WithinTx(func(r repository.Repos) error {
 		st, err := r.Person.GetByID(studentID)
 		if err != nil {
-			return nil
+			return err
 		}
 		if st == nil {
 			return ErrNotFound
@@ -112,9 +112,9 @@ func (cs *ClassService) AddStudentToClass(studentID uint, classID uint) error {
 			return ErrNotFound
 		}
 
-		exists, err := r.Enrollemnt.Exists(classID, studentID)
+		exists, err := r.Enrollment.Exists(classID, studentID)
 		if err != nil {
-			return nil
+			return err
 		}
 		if exists {
 			return ErrDuplicateEnrollment
@@ -127,7 +127,7 @@ func (cs *ClassService) AddStudentToClass(studentID uint, classID uint) error {
 		} else if *st.StudentSchoolID != cl.SchoolID {
 			return ErrDifferentSchool
 		}
-		_, err = r.Enrollemnt.Add(classID, studentID)
+		_, err = r.Enrollment.Add(classID, studentID)
 		return err
 
 	})

@@ -18,7 +18,7 @@ func NewEnrollmentRepository(db *gorm.DB) *EnrollmentRepository {
 func (er *EnrollmentRepository) Exists(classID uint, studentID uint) (bool, error) {
 	var e models.Enrollment
 
-	err := er.db.Where("class id = ? AND student_id = ?", classID, studentID).First(&e).Error
+	err := er.db.Where("class_id = ? AND student_id = ?", classID, studentID).First(&e).Error
 
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
